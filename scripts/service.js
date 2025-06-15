@@ -41,7 +41,6 @@ async function renderService(serviceName) {
     const schema = await schemaRes.json();
     const text = await textRes.json();
     const highlights = await highlightsRes.json();
-
     const serviceHighlights = highlights[serviceName] || {};
 
     document.title =
@@ -66,37 +65,34 @@ async function renderService(serviceName) {
           const p = document.createElement("p");
           p.className = "hebrew-line";
           p.style.fontSize = `calc(32px * ${getFontScale()})`;
-          p.innerHTML = applyHighlights(line, nodeHighlights?.[idx]);
+          const highlight = nodeHighlights?.[idx];
+          p.innerHTML = applyHighlights(line, highlight, key, idx);
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
         Object.entries(prayerData).forEach(([subkey, block]) => {
           const subHighlights = nodeHighlights?.[subkey] || {};
 
-          // 1D block
           if (Array.isArray(block) && typeof block[0] === "string") {
             block.forEach((line, i) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
               p.style.fontSize = `calc(32px * ${getFontScale()})`;
-              p.innerHTML = applyHighlights(line, subHighlights?.[i]);
+              const highlight = subHighlights?.[i];
+              p.innerHTML = applyHighlights(line, highlight, `${key}.${subkey}`, i);
               section.appendChild(p);
             });
-          }
-
-          // 2D block (e.g. Amidah blessings)
-          else if (Array.isArray(block) && Array.isArray(block[0])) {
+          } else if (Array.isArray(block) && Array.isArray(block[0])) {
             block.forEach((subBlock, blockIndex) => {
               subBlock.forEach((line, lineIndex) => {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
                 p.style.fontSize = `calc(32px * ${getFontScale()})`;
-                p.innerHTML = applyHighlights(
-                  line,
-                  subHighlights?.[blockIndex]?.[lineIndex]
-                );
+                const highlight = subHighlights?.[blockIndex]?.[lineIndex];
+                p.innerHTML = applyHighlights(line, highlight, `${key}.${subkey}`, `${blockIndex}.${lineIndex}`);
                 section.appendChild(p);
               });
+              section.appendChild(document.createElement("hr"));
             });
           }
         });
@@ -111,13 +107,15 @@ async function renderService(serviceName) {
   }
 }
 
-function applyHighlights(line, highlights) {
-  if (!highlights) return line;
+function applyHighlights(line, highlights, contextKey, lineKey) {
+  if (!Array.isArray(highlights) || highlights.length === 0) {
+    return line;
+  }
 
-  const phrases = Array.isArray(highlights) ? highlights : [highlights];
+  console.log(`Applying highlights for ${contextKey} line ${lineKey}:`, highlights);
 
   let result = line;
-  phrases.forEach((phrase) => {
+  highlights.forEach((phrase) => {
     const safe = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     const regex = new RegExp(safe, "g");
     result = result.replace(
@@ -125,6 +123,5 @@ function applyHighlights(line, highlights) {
       `<span class="highlight">${phrase}</span>`
     );
   });
-
   return result;
 }
