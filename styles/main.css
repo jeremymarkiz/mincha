@@ -15,10 +15,42 @@ header {
   z-index: 1000;
   background-color: #5a819e;
   color: white;
-  text-align: center;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+  border-bottom: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
+.back-button {
+  font-size: 1rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #ffffff88;
+  border-radius: 4px;
+  text-decoration: none;
+  color: white;
+  background-color: transparent;
+}
+
+.back-button:hover {
+  background-color: #6a94b6;
+}
+
+.font-controls button {
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #ffffff88;
+  border-radius: 4px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.font-controls button:hover {
+  background-color: #6a94b6;
+}
+
 
 
 footer {
@@ -68,6 +100,8 @@ main.nav-grid {
 }
 
 #service-content p {
+  direction:rtl;
+  text-align: right;
   font-family: 'Frank Ruhl Libre', serif;
   font-size: 4em;
   line-height: 1.4;

@@ -72,7 +72,7 @@ async function renderService(serviceName) {
               const p = document.createElement("p");
               p.textContent = line;
               p.setAttribute("dir", "rtl");
-              p.style.fontSize = `${4 * fontScale}em`;
+              p.style.fontSize = `${2.5 * fontScale}em`;
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
