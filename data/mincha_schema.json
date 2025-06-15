@@ -1,0 +1,121 @@
+{
+    "key" : "Mincha",
+    "titles": [
+        { "lang": "en", "text": "Mincha", "primary": true },
+        { "lang": "he", "text": "מנחה", "primary": true }
+    ],
+    "language" : "he",
+    "type" : "prayer service",
+    "nodeType" : "SchemaNode",
+    "nodes" : [
+        {
+            "nodeType" : "JaggedArrayNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Ashrei", "primary": true },
+                { "lang": "he", "text": "אשרי", "primary": true }
+            ],
+            "key" : "Ashrei",
+            "depth" : 1,
+            "sectionNames" : ["Line"],
+            "addressTypes" : ["Integer"]
+        },
+        {
+           "nodeType" : "JaggedArrayNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Hatzi Kaddish", "primary": true },
+                { "lang": "he", "text": "חצי קדיש", "primary": true }
+            ],
+            "key" : "HatziKaddish",
+            "depth" : 1,
+            "minyanRequired" : true,
+            "sectionNames" : ["Line"],
+            "addressTypes" : ["Integer"] 
+        },
+        {
+            "nodeType" : "SchemaNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Amidah", "primary": true },
+                { "lang": "he", "text": "עמידה", "primary": true }
+            ],
+            "key" : "Amidah",
+            "depth" : 1,
+            "sectionNames" : ["Section"],
+            "addressTypes" : ["Integer"],
+            "nodes" : [{
+                "nodeType" : "JaggedArrayNode",
+                "key" : "introduction",
+                "titles" : [
+                        { "lang": "en", "text": "Adonai Sfatai", "primary": true },
+                        { "lang": "he", "text": "אֲדנָי שפָתַי", "primary": true }
+                    ],             
+                "sectionNames" : ["Line"],
+                "addressTypes" : ["Integer"]
+            },
+            {
+                "nodeType" : "JaggedArrayNode",
+                "key" : "blessings",
+                "depth" : 2,
+                "sectionNames" : ["Blessing", "Line"],
+                "addressTypes" : ["Integer", "Integer"]
+            },
+            {
+                "nodeType" : "JaggedArrayNode",
+                "key" : "conclusion",
+                "titles" : [
+                        { "lang": "en", "text": "Oseh Shalom", "primary": true },
+                        { "lang": "he", "text": "עֹשֶׂה שָׁלוֹם", "primary": true }
+                    ],
+                    "sectionNames" : ["Line"],
+                "addressTypes" : ["Integer"]
+            }
+        ]
+        },
+        {
+            "nodeType" : "JaggedArrayNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Kaddish Shalem", "primary": true },
+                { "lang": "he", "text": "קדיש שלם", "primary": true }
+            ],
+            "key" : "KaddishShalem",
+            "minyanRequired" : true,
+            "depth" : 1,
+            "sectionNames" : ["Line"],
+            "addressTypes" : ["Integer"]
+        },
+        {
+            "nodeType" : "JaggedArrayNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Aleinu", "primary": true },
+                { "lang": "he", "text": "עלינו", "primary": true }
+            ],
+            "key" : "Aleinu",
+            "depth" : 1,
+            "sectionNames" : ["Line"],
+            "addressTypes" : ["Integer"]
+        },
+        {
+            "nodeType" : "JaggedArrayNode",
+            "type" : "tefilah",
+            "titles": [
+                { "lang": "en", "text": "Mourner's Kaddish", "primary": true },
+                { "lang": "he", "text": "קדיש יתום", "primary": true }
+            ],
+            "key" : "MournersKaddish",
+            "depth" : 1,
+            "minyanRequired" : true,
+            "sectionNames" : ["Line"],
+            "addressTypes" : ["Integer"]
+        }
+    ]
+}
+
+
+
+
+
+
