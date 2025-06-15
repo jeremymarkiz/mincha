@@ -97,7 +97,6 @@ async function renderService(serviceName) {
                 );
                 section.appendChild(p);
               });
-              section.appendChild(document.createElement("hr"));
             });
           }
         });
@@ -113,12 +112,12 @@ async function renderService(serviceName) {
 }
 
 function applyHighlights(line, highlights) {
-  if (!Array.isArray(highlights) || highlights.length === 0) {
-    return line;
-  }
+  if (!highlights) return line;
+
+  const phrases = Array.isArray(highlights) ? highlights : [highlights];
 
   let result = line;
-  highlights.forEach((phrase) => {
+  phrases.forEach((phrase) => {
     const safe = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     const regex = new RegExp(safe, "g");
     result = result.replace(
@@ -126,5 +125,6 @@ function applyHighlights(line, highlights) {
       `<span class="highlight">${phrase}</span>`
     );
   });
+
   return result;
 }
