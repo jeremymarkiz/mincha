@@ -48,58 +48,62 @@ async function renderService(serviceName) {
 
     contentEl.innerHTML = "";
 
-    schema.nodes.forEach((node) => {
-      const key = node.key;
-      const title = node.titles?.find((t) => t.lang === "en")?.text || key;
-      const prayerData = text.text[key];
-      const nodeHighlights = serviceHighlights?.[key] || {};
+    console.log("Highlights loaded:", serviceHighlights);
 
-      const section = document.createElement("section");
-      const heading = document.createElement("h2");
-      heading.textContent = title;
-      heading.setAttribute("dir", "ltr");
-      section.appendChild(heading);
+schema.nodes.forEach((node) => {
+  const key = node.key;
+  const title = node.titles?.find((t) => t.lang === "en")?.text || key;
+  const prayerData = text.text[key];
+  const nodeHighlights = serviceHighlights?.[key];
+  console.log(`Rendering section: ${key}`, nodeHighlights);
 
-      if (Array.isArray(prayerData)) {
-        prayerData.forEach((line, idx) => {
+  const section = document.createElement("section");
+  const heading = document.createElement("h2");
+  heading.textContent = title;
+  heading.setAttribute("dir", "ltr");
+  section.appendChild(heading);
+
+  if (Array.isArray(prayerData)) {
+    console.log(`Flat array block: ${key}`);
+    prayerData.forEach((line, idx) => {
+      const highlight = nodeHighlights?.[idx];
+      console.log(`Line ${idx}:`, highlight);
+      const p = document.createElement("p");
+      p.className = "hebrew-line";
+      p.innerHTML = applyHighlights(line, highlight, key, idx);
+      section.appendChild(p);
+    });
+  } else if (typeof prayerData === "object") {
+    Object.entries(prayerData).forEach(([subkey, block]) => {
+      const subHighlights = nodeHighlights?.[subkey];
+      console.log(`Subsection: ${subkey}`, subHighlights);
+
+      if (Array.isArray(block) && typeof block[0] === "string") {
+        block.forEach((line, i) => {
           const p = document.createElement("p");
           p.className = "hebrew-line";
-          p.style.fontSize = `calc(32px * ${getFontScale()})`;
-          const highlight = nodeHighlights?.[idx];
-          p.innerHTML = applyHighlights(line, highlight, key, idx);
+          p.innerHTML = applyHighlights(line, subHighlights?.[i], `${key}/${subkey}`, i);
           section.appendChild(p);
         });
-      } else if (typeof prayerData === "object") {
-        Object.entries(prayerData).forEach(([subkey, block]) => {
-          const subHighlights = nodeHighlights?.[subkey] || {};
-
-          if (Array.isArray(block) && typeof block[0] === "string") {
-            block.forEach((line, i) => {
-              const p = document.createElement("p");
-              p.className = "hebrew-line";
-              p.style.fontSize = `calc(32px * ${getFontScale()})`;
-              const highlight = subHighlights?.[i];
-              p.innerHTML = applyHighlights(line, highlight, `${key}.${subkey}`, i);
-              section.appendChild(p);
-            });
-          } else if (Array.isArray(block) && Array.isArray(block[0])) {
-            block.forEach((subBlock, blockIndex) => {
-              subBlock.forEach((line, lineIndex) => {
-                const p = document.createElement("p");
-                p.className = "hebrew-line";
-                p.style.fontSize = `calc(32px * ${getFontScale()})`;
-                const highlight = subHighlights?.[blockIndex]?.[lineIndex];
-                p.innerHTML = applyHighlights(line, highlight, `${key}.${subkey}`, `${blockIndex}.${lineIndex}`);
-                section.appendChild(p);
-              });
-              section.appendChild(document.createElement("hr"));
-            });
-          }
+      } else if (Array.isArray(block) && Array.isArray(block[0])) {
+        block.forEach((group, groupIdx) => {
+          group.forEach((line, lineIdx) => {
+            const h = subHighlights?.[groupIdx]?.[lineIdx];
+            console.log(`Amidah line [${groupIdx}][${lineIdx}]:`, h);
+            const p = document.createElement("p");
+            p.className = "hebrew-line";
+            p.innerHTML = applyHighlights(line, h, `${key}/${subkey}`, `${groupIdx}-${lineIdx}`);
+            section.appendChild(p);
+          });
+          section.appendChild(document.createElement("hr"));
         });
       }
-
-      contentEl.appendChild(section);
     });
+  }
+
+  contentEl.appendChild(section);
+});
+
   } catch (err) {
     console.error("Error loading service:", err);
     contentEl.innerHTML =
