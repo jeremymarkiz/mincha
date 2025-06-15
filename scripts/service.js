@@ -1,123 +1,117 @@
 // scripts/service.js
 
-let rawService = null;
-
 document.addEventListener("DOMContentLoaded", () => {
-  rawService = new URLSearchParams(window.location.search).get("service");
-  if (!rawService) {
+  const params = new URLSearchParams(window.location.search);
+  const serviceName = params.get("service");            // “mincha”
+  if (!serviceName) {
     console.error("Missing service parameter in URL.");
     document.getElementById("service-content").innerHTML =
       "<p dir='ltr'>Missing service name in URL.</p>";
     return;
   }
-  // for file names, we lowercase; for highlights lookup we try both
-  const serviceKey = rawService.toLowerCase();
-  renderService(serviceKey, rawService);
+  renderService(serviceName.toLowerCase());
 });
 
-async function renderService(serviceKey, rawKey) {
-  const schemaPath     = `data/${serviceKey}_schema.json`;
-  const textPath       = `data/${serviceKey}_text.json`;
-  const highlightsPath = `data/highlights.json`;
-  const contentEl      = document.getElementById("service-content");
+async function renderService(serviceKey) {
+  const [schemaRes, textRes, hlRes] = await Promise.all([
+    fetch(`data/${serviceKey}_schema.json`),
+    fetch(`data/${serviceKey}_text.json`),
+    fetch(`data/highlights.json`),
+  ]);
+  if (!schemaRes.ok || !textRes.ok || !hlRes.ok) {
+    console.error("Failed to load JSON files");
+    return;
+  }
 
-  try {
-    const [schemaRes, textRes, hlRes] = await Promise.all([
-      fetch(schemaPath),
-      fetch(textPath),
-      fetch(highlightsPath),
-    ]);
+  const schema = await schemaRes.json();
+  const text   = await textRes.json();
+  const hldata = await hlRes.json();
 
-    if (!schemaRes.ok || !textRes.ok || !hlRes.ok) {
-      throw new Error("Failed to load one or more JSON files.");
-    }
+  // look up highlights by lower‐case serviceKey
+  const highlights = hldata[serviceKey] || {};
 
-    const schema    = await schemaRes.json();
-    const textJson  = await textRes.json();
-    const highlightsJson = await hlRes.json();
+  // set document title
+  const englishTitle =
+    schema.titles?.find(t => t.lang === "en")?.text ||
+    serviceKey;
+  document.title = englishTitle;
 
-    // look up highlights by rawKey (capitalized) or by lowercased serviceKey
-    const serviceHighlights =
-      highlightsJson[rawKey] || highlightsJson[serviceKey] || {};
+  const container = document.getElementById("service-content");
+  container.innerHTML = "";
 
-    // set page title
-    const englishTitle =
-      schema.titles?.find(t => t.lang === "en")?.text || rawKey;
-    document.title = englishTitle;
+  // render each section
+  schema.nodes.forEach(node => {
+    const key       = node.key;         // e.g. "Ashrei", "Amidah"
+    const sectionHl = highlights[key] || {};
 
-    // clear previous
-    contentEl.innerHTML = "";
+    // section wrapper
+    const section = document.createElement("section");
+    const h2 = document.createElement("h2");
+    h2.textContent = node.titles?.find(t => t.lang==="en")?.text || key;
+    h2.setAttribute("dir", "ltr");
+    section.appendChild(h2);
 
-    // render each top-level node
-    schema.nodes.forEach(node => {
-      const key       = node.key;  // e.g. "Ashrei", "Amidah"
-      const title     = node.titles?.find(t => t.lang==="en")?.text || key;
-      const prayerData= textJson.text[key];
-      const nodeHls   = serviceHighlights[key] || {};
+    const data = text.text[key];
 
-      // section wrapper
-      const section = document.createElement("section");
-      const h2 = document.createElement("h2");
-      h2.textContent = title;
-      h2.setAttribute("dir", "ltr");
-      section.appendChild(h2);
+    // flat array of lines
+    if (Array.isArray(data)) {
+      data.forEach((line, i) => {
+        const p = document.createElement("p");
+        p.className = "hebrew-line";
+        const hl = sectionHl[i] || [];
+        p.innerHTML = applyHighlights(line, hl);
+        section.appendChild(p);
+      });
 
-      if (Array.isArray(prayerData)) {
-        // 1D array of lines
-        prayerData.forEach((line, idx) => {
-          const p = document.createElement("p");
-          p.className = "hebrew-line";
-          const hl = nodeHls[idx] || [];
-          p.innerHTML = applyHighlights(line, hl);
-          section.appendChild(p);
-        });
+    // nested object (e.g. Amidah.introduction or Amidah.blessings)
+    } else if (typeof data === "object") {
+      Object.entries(data).forEach(([subkey, block]) => {
+        const subHl = sectionHl[subkey] || [];
 
-      } else if (typeof prayerData === "object") {
-        // nested object: e.g. Amidah.introduction (1D) or Amidah.blessings (2D)
-        Object.entries(prayerData).forEach(([subkey, block]) => {
-          const subHls = nodeHls[subkey] || [];
+        // 1D sub‐array
+        if (Array.isArray(block) && typeof block[0] === "string") {
+          block.forEach((line, i) => {
+            const p = document.createElement("p");
+            p.className = "hebrew-line";
+            const hl = subHl[i] || [];
+            p.innerHTML = applyHighlights(line, hl);
+            section.appendChild(p);
+          });
 
-          if (Array.isArray(block) && typeof block[0] === "string") {
-            // 1D block
-            block.forEach((line, i) => {
+        // 2D sub‐array (blessings)
+        } else if (
+          Array.isArray(block) &&
+          Array.isArray(block[0])
+        ) {
+          block.forEach((group, gi) => {
+            group.forEach((line, li) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
-              const hl = subHls[i] || [];
+              const hl = (subHl[gi]||[])[li] || [];
               p.innerHTML = applyHighlights(line, hl);
               section.appendChild(p);
             });
+            // divider between blessings
+            section.appendChild(document.createElement("hr"));
+          });
+        }
+      });
+    }
 
-          } else if (Array.isArray(block) && Array.isArray(block[0])) {
-            // 2D block (blessings → [ [line,line], [line,line], ... ])
-            block.forEach((group, gIdx) => {
-              group.forEach((line, lIdx) => {
-                const p = document.createElement("p");
-                p.className = "hebrew-line";
-                const hl = (subHls[gIdx]||[])[lIdx] || [];
-                p.innerHTML = applyHighlights(line, hl);
-                section.appendChild(p);
-              });
-              // divider between blessings
-              section.appendChild(document.createElement("hr"));
-            });
-          }
-        });
-      }
-
-      contentEl.appendChild(section);
-    });
-
-  } catch (err) {
-    console.error("Error loading service:", err);
-    contentEl.innerHTML =
-      "<p dir='ltr'>Error loading service content. See console for details.</p>";
-  }
+    container.appendChild(section);
+  });
 }
 
-function applyHighlights(line, highlights=[]) {
-  if (!Array.isArray(highlights) || highlights.length === 0) return line;
-  return highlights.reduce((text, phrase) => {
-    const esc = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-    return text.replace(new RegExp(esc, "g"), `<span class="highlight">${phrase}</span>`);
+function applyHighlights(line, phrases=[]) {
+  if (!phrases.length) return line;
+
+  console.log("Highlighting:", phrases, "in →", line);
+  return phrases.reduce((text, phrase) => {
+    const safe = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const re   = new RegExp(safe, "g");
+    return text.replace(
+      re,
+      `<span class="highlight">${phrase}</span>`
+    );
   }, line);
 }
