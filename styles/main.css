@@ -140,3 +140,10 @@ main.nav-grid {
   margin-top: 1rem;
   margin-bottom: 0.25rem;
 }
+
+/* -------------------- HIGHLIGHTING -------------------- */
+mark {
+  color: #6ec3c0; /* Your theme green */
+  font-weight: bold;
+  background: none;
+}
