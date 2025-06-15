@@ -3,13 +3,12 @@
 }
 
 body {
-  background-color: #fefefe;
-  margin: 0;
-  direction: rtl;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: sans-serif;
+  margin: 0;
+  background-color: #fefefe;
+  direction: rtl;
 }
 
 /* -------------------- HEADER -------------------- */
@@ -18,7 +17,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #5a819e;
+  background-color: #5a819e4a;
   color: white;
   padding: 0.75rem 1rem;
   display: flex;
@@ -72,12 +71,13 @@ footer {
 
 /* -------------------- NAV PAGE -------------------- */
 
+
 main.nav-grid {
+  flex: 1; /* Fills remaining space so footer is pushed down */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
   gap: 1.5rem;
   padding: 2rem;
 }
@@ -123,23 +123,32 @@ main.nav-grid {
 .hebrew-line {
   font-family: 'Frank Ruhl Libre', serif;
   direction: rtl;
-  text-align: center;
-  font-size: calc(2.25em * var(--font-scale));
-  line-height: 1.4;
-  margin: 1rem 0;
+  text-align: right;
+  font-size: 32px;
+  line-height: 1.8;
+  margin: 0.75rem 0;
+  color: #111;
 }
+
+
 
 /* Section titles */
 #service-content h2 {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  text-align: left;
+  color: #5a819e; /* Your primary blue */
+  border-bottom: 2px solid #6ec3c0; /* Optional green underline */
+  padding-bottom: 0.25rem;
+  text-align: center;
   direction: ltr;
+  margin: 2rem 0 1rem 0;
 }
 
 #service-content h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-align: left;
-  direction: ltr;
+  display: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #999;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
 }

@@ -1,5 +1,3 @@
-// scripts/service.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentService = urlParams.get("service");
@@ -40,7 +38,7 @@ async function renderService(serviceName) {
       schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
     document.title = englishTitle;
 
-    contentEl.innerHTML = ""; // clear previous content
+    contentEl.innerHTML = ""; // Clear previous content
 
     schema.nodes.forEach((node) => {
       const key = node.key;
@@ -49,20 +47,23 @@ async function renderService(serviceName) {
 
       const section = document.createElement("section");
 
+      // English heading
       const heading = document.createElement("h2");
       heading.textContent = title;
       heading.setAttribute("dir", "ltr");
       section.appendChild(heading);
 
       if (Array.isArray(prayerData)) {
+        // Single paragraph block
         prayerData.forEach((line) => {
           const p = document.createElement("p");
+          p.classList.add("hebrew-line");
           p.textContent = line;
           p.setAttribute("dir", "rtl");
-          p.classList.add("hebrew-line");
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
+        // Labeled subsections
         Object.entries(prayerData).forEach(([subkey, value]) => {
           const subheading = document.createElement("h3");
           subheading.textContent = subkey;
@@ -72,18 +73,18 @@ async function renderService(serviceName) {
           if (Array.isArray(value)) {
             value.forEach((line) => {
               const p = document.createElement("p");
+              p.classList.add("hebrew-line");
               p.textContent = line;
               p.setAttribute("dir", "rtl");
-              p.classList.add("hebrew-line");
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
             value.forEach((blessing) => {
               blessing.forEach((line) => {
                 const p = document.createElement("p");
+                p.classList.add("hebrew-line");
                 p.textContent = line;
                 p.setAttribute("dir", "rtl");
-                p.classList.add("hebrew-line");
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
