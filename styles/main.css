@@ -1,5 +1,4 @@
 body {
-  font-family: 'Frank Ruhl Libre', serif;
   background-color: #fefefe;
   margin: 0;
   direction: rtl;
@@ -7,6 +6,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+
 
 
 header, footer {
@@ -55,18 +55,19 @@ main.nav-grid {
   transform: translateY(0);
 }
 
-#service-content {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 1rem;
+#service-content p {
+  font-family: 'Frank Ruhl Libre', serif;
   font-size: 1.2rem;
   line-height: 2;
-  word-break: break-word;
+  margin: 0.5rem 0;
 }
-#service-content h2, 
+
+#service-content h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
 #service-content h3 {
-  font-family: sans-serif;
-  color: #333;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
