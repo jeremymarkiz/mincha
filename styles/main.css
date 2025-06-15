@@ -1,3 +1,7 @@
+:root {
+  --font-scale: 1.0;
+}
+
 body {
   background-color: #fefefe;
   margin: 0;
@@ -5,9 +9,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  font-family: sans-serif;
 }
 
-
+/* -------------------- HEADER -------------------- */
 
 header {
   position: sticky;
@@ -16,7 +21,6 @@ header {
   background-color: #5a819e;
   color: white;
   padding: 0.75rem 1rem;
-  border-bottom: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -36,14 +40,20 @@ header {
   background-color: #6a94b6;
 }
 
+/* Font size buttons */
+.font-controls {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
 .font-controls button {
   font-size: 1rem;
-  margin-left: 0.5rem;
-  padding: 0.4rem 0.75rem;
-  border: 1px solid #ffffff88;
-  border-radius: 4px;
-  background-color: transparent;
+  margin: 0 0.25rem;
+  padding: 0.4rem 0.6rem;
+  background-color: #ffffff22;
   color: white;
+  border: 1px solid #fff;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -51,7 +61,7 @@ header {
   background-color: #6a94b6;
 }
 
-
+/* -------------------- FOOTER -------------------- */
 
 footer {
   background-color: #5a819e;
@@ -59,6 +69,8 @@ footer {
   text-align: center;
   padding: 1rem;
 }
+
+/* -------------------- NAV PAGE -------------------- */
 
 main.nav-grid {
   display: flex;
@@ -81,7 +93,7 @@ main.nav-grid {
   background-color: #6ec3c0;
   border: none;
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.2s ease, transform 0.2s ease;
   width: 60%;
   max-width: 300px;
@@ -99,39 +111,35 @@ main.nav-grid {
   transform: translateY(0);
 }
 
-#service-content p {
-  direction:rtl;
-  text-align: right;
-  font-family: 'Frank Ruhl Libre', serif;
-  font-size: 4em;
-  line-height: 1.4;
-  margin: 1rem 0;
-  text-align: center;
+/* -------------------- SERVICE PAGE -------------------- */
+
+#service-content {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
 }
 
+/* Hebrew text lines */
+.hebrew-line {
+  font-family: 'Frank Ruhl Libre', serif;
+  direction: rtl;
+  text-align: center;
+  font-size: calc(2.25em * var(--font-scale));
+  line-height: 1.4;
+  margin: 1rem 0;
+}
 
+/* Section titles */
 #service-content h2 {
   font-size: 1.4rem;
   font-weight: 700;
+  text-align: left;
+  direction: ltr;
 }
 
 #service-content h3 {
   font-size: 1.1rem;
   font-weight: 600;
-}
-
-.font-controls {
-  display: inline-block;
-  margin-left: 1rem;
-}
-
-.font-controls button {
-  font-size: 1rem;
-  margin: 0 0.25rem;
-  padding: 0.4rem 0.6rem;
-  background-color: #ffffff22;
-  color: white;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  cursor: pointer;
+  text-align: left;
+  direction: ltr;
 }

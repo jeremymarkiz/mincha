@@ -1,3 +1,5 @@
+// scripts/service.js
+
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentService = urlParams.get("service");
@@ -38,7 +40,7 @@ async function renderService(serviceName) {
       schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
     document.title = englishTitle;
 
-    contentEl.innerHTML = ""; // clear previous content before rerendering
+    contentEl.innerHTML = ""; // clear previous content
 
     schema.nodes.forEach((node) => {
       const key = node.key;
@@ -57,7 +59,7 @@ async function renderService(serviceName) {
           const p = document.createElement("p");
           p.textContent = line;
           p.setAttribute("dir", "rtl");
-          p.style.fontSize = `${4 * fontScale}em`;
+          p.classList.add("hebrew-line");
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
@@ -72,7 +74,7 @@ async function renderService(serviceName) {
               const p = document.createElement("p");
               p.textContent = line;
               p.setAttribute("dir", "rtl");
-              p.style.fontSize = `${2.5 * fontScale}em`;
+              p.classList.add("hebrew-line");
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
@@ -81,7 +83,7 @@ async function renderService(serviceName) {
                 const p = document.createElement("p");
                 p.textContent = line;
                 p.setAttribute("dir", "rtl");
-                p.style.fontSize = `${4 * fontScale}em`;
+                p.classList.add("hebrew-line");
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
