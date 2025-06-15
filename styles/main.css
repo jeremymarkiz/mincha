@@ -15,43 +15,43 @@ body {
 }
 
 /* -------------------- HEADER -------------------- */
+/* === Index Page Header === */
+.index-header {
+  background-color: #5a819e;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
 
-header {
+/* === Service Page Header === */
+.service-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #a4bacc; /* or your desired header color */
+  background-color: #a4bacc;
   color: white;
   padding: 0.75rem 1rem;
   display: flex;
-  justify-content: center; /* centers the child content */
+  justify-content: space-between;
   align-items: center;
-  text-align: center;
 }
 
-
-.back-button,
-.font-controls button {
+.service-header .back-button,
+.service-header .font-controls button {
   background-color: #5a819e;
   color: white;
   border: none;
   border-radius: 4px;
   padding: 0.4rem 0.75rem;
   font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.back-button:hover,
-.font-controls button:hover {
+.service-header .back-button:hover,
+.service-header .font-controls button:hover {
   background-color: #6a94b6;
 }
 
-.font-controls {
-  display: inline-flex;
-  gap: 0.5rem;
-}
 
 /* -------------------- FOOTER -------------------- */
 

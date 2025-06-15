@@ -46,6 +46,7 @@ async function renderService(serviceName) {
       const key = node.key;
       const title = node.titles?.find((t) => t.lang === "en")?.text || key;
       const prayerData = text.text[key];
+      const nodeHighlights = serviceHighlights?.[key] || {};
 
       const section = document.createElement("section");
       const heading = document.createElement("h2");
@@ -53,33 +54,37 @@ async function renderService(serviceName) {
       heading.setAttribute("dir", "ltr");
       section.appendChild(heading);
 
-      const nodeHighlights = serviceHighlights?.[key] || {};
-
       if (Array.isArray(prayerData)) {
         prayerData.forEach((line, idx) => {
           const p = document.createElement("p");
           p.className = "hebrew-line";
-          p.innerHTML = applyHighlights(line, nodeHighlights[idx]);
+          p.innerHTML = applyHighlights(line, nodeHighlights?.[idx]);
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
         Object.entries(prayerData).forEach(([subkey, block]) => {
-          if (Array.isArray(block)) {
-            block.forEach((line, lineIndex) => {
+          const subHighlights = nodeHighlights?.[subkey] || {};
+
+          // 1D block
+          if (Array.isArray(block) && typeof block[0] === "string") {
+            block.forEach((line, i) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
-              const highlight = nodeHighlights?.[subkey]?.[lineIndex];
-              p.innerHTML = applyHighlights(line, highlight);
+              p.innerHTML = applyHighlights(line, subHighlights?.[i]);
               section.appendChild(p);
             });
-          } else if (Array.isArray(block[0])) {
-            block.forEach((blessing, bIndex) => {
-              blessing.forEach((line, lIndex) => {
+          }
+
+          // 2D block (e.g. Amidah blessings)
+          else if (Array.isArray(block) && Array.isArray(block[0])) {
+            block.forEach((subBlock, blockIndex) => {
+              subBlock.forEach((line, lineIndex) => {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
-                const highlight =
-                  nodeHighlights?.[subkey]?.[bIndex]?.[lIndex];
-                p.innerHTML = applyHighlights(line, highlight);
+                p.innerHTML = applyHighlights(
+                  line,
+                  subHighlights?.[blockIndex]?.[lineIndex]
+                );
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
@@ -102,14 +107,14 @@ function applyHighlights(line, highlights) {
     return line;
   }
 
-  let highlightedLine = line;
+  let result = line;
   highlights.forEach((phrase) => {
-    const safePhrase = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const regex = new RegExp(safePhrase, "g");
-    highlightedLine = highlightedLine.replace(
+    const safe = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const regex = new RegExp(safe, "g");
+    result = result.replace(
       regex,
       `<span class="highlight">${phrase}</span>`
     );
   });
-  return highlightedLine;
+  return result;
 }
