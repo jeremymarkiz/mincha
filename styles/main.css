@@ -9,7 +9,19 @@ body {
 
 
 
-header, footer {
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #5a819e;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+footer {
   background-color: #5a819e;
   color: white;
   text-align: center;
@@ -57,10 +69,12 @@ main.nav-grid {
 
 #service-content p {
   font-family: 'Frank Ruhl Libre', serif;
-  font-size: 1.2rem;
-  line-height: 2;
-  margin: 0.5rem 0;
+  font-size: 4em;
+  line-height: 1.4;
+  margin: 1rem 0;
+  text-align: center;
 }
+
 
 #service-content h2 {
   font-size: 1.4rem;
@@ -70,4 +84,20 @@ main.nav-grid {
 #service-content h3 {
   font-size: 1.1rem;
   font-weight: 600;
+}
+
+.font-controls {
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.font-controls button {
+  font-size: 1rem;
+  margin: 0 0.25rem;
+  padding: 0.4rem 0.6rem;
+  background-color: #ffffff22;
+  color: white;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  cursor: pointer;
 }

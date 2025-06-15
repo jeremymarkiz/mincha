@@ -1,23 +1,28 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const serviceName = urlParams.get("service");
+  currentService = urlParams.get("service");
 
-  if (!serviceName) {
+  if (!currentService) {
     console.error("Missing service parameter in URL.");
     document.getElementById("service-content").innerHTML =
       "<p dir='ltr'>Missing service name in URL.</p>";
     return;
   }
 
+  renderService(currentService);
+});
+
+async function renderService(serviceName) {
   const schemaPath = `data/${serviceName}_schema.json`;
   const textPath = `data/${serviceName}_text.json`;
+  const contentEl = document.getElementById("service-content");
 
   console.log(`Fetching: ${schemaPath}, ${textPath}`);
 
   try {
     const [schemaRes, textRes] = await Promise.all([
       fetch(schemaPath),
-      fetch(textPath)
+      fetch(textPath),
     ]);
 
     if (!schemaRes.ok || !textRes.ok) {
@@ -33,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
     document.title = englishTitle;
 
-    const contentEl = document.getElementById("service-content");
+    contentEl.innerHTML = ""; // clear previous content before rerendering
 
     schema.nodes.forEach((node) => {
       const key = node.key;
@@ -52,6 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const p = document.createElement("p");
           p.textContent = line;
           p.setAttribute("dir", "rtl");
+          p.style.fontSize = `${4 * fontScale}em`;
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
@@ -66,6 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               const p = document.createElement("p");
               p.textContent = line;
               p.setAttribute("dir", "rtl");
+              p.style.fontSize = `${4 * fontScale}em`;
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
@@ -74,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const p = document.createElement("p");
                 p.textContent = line;
                 p.setAttribute("dir", "rtl");
+                p.style.fontSize = `${4 * fontScale}em`;
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
@@ -86,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   } catch (err) {
     console.error("Error loading service:", err);
-    document.getElementById("service-content").innerHTML =
+    contentEl.innerHTML =
       "<p dir='ltr'>Error loading service content. See console for details.</p>";
   }
-});
+}
