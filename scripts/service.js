@@ -12,33 +12,44 @@ document.addEventListener("DOMContentLoaded", () => {
   renderService(currentService);
 });
 
+function applyHighlights(text, highlightWords = []) {
+  let result = text;
+  highlightWords.forEach(word => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'g');
+    result = result.replace(regex, `<mark>${word}</mark>`);
+  });
+  return result;
+}
+
 async function renderService(serviceName) {
   const schemaPath = `data/${serviceName}_schema.json`;
   const textPath = `data/${serviceName}_text.json`;
+  const highlightsPath = `data/highlights.json`;
+
   const contentEl = document.getElementById("service-content");
 
-  console.log(`Fetching: ${schemaPath}, ${textPath}`);
-
   try {
-    const [schemaRes, textRes] = await Promise.all([
+    const [schemaRes, textRes, highlightsRes] = await Promise.all([
       fetch(schemaPath),
       fetch(textPath),
+      fetch(highlightsPath)
     ]);
 
-    if (!schemaRes.ok || !textRes.ok) {
-      throw new Error(
-        `Fetch failed. Schema: ${schemaRes.status}, Text: ${textRes.status}`
-      );
+    if (!schemaRes.ok || !textRes.ok || !highlightsRes.ok) {
+      throw new Error("One or more fetches failed.");
     }
 
     const schema = await schemaRes.json();
     const text = await textRes.json();
+    const highlightsData = await highlightsRes.json();
+    const highlights = highlightsData[serviceName] || {};
 
     const englishTitle =
       schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
     document.title = englishTitle;
 
-    contentEl.innerHTML = ""; // Clear previous content
+    contentEl.innerHTML = "";
 
     schema.nodes.forEach((node) => {
       const key = node.key;
@@ -47,23 +58,22 @@ async function renderService(serviceName) {
 
       const section = document.createElement("section");
 
-      // English heading
       const heading = document.createElement("h2");
       heading.textContent = title;
       heading.setAttribute("dir", "ltr");
       section.appendChild(heading);
 
       if (Array.isArray(prayerData)) {
-        // Single paragraph block
-        prayerData.forEach((line) => {
+        prayerData.forEach((line, lineIndex) => {
           const p = document.createElement("p");
-          p.classList.add("hebrew-line");
-          p.textContent = line;
-          p.setAttribute("dir", "rtl");
+          p.className = "hebrew-line";
+
+          const highlightList = highlights?.[key]?.[lineIndex] || [];
+          p.innerHTML = applyHighlights(line, highlightList);
+
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
-        // Labeled subsections
         Object.entries(prayerData).forEach(([subkey, value]) => {
           const subheading = document.createElement("h3");
           subheading.textContent = subkey;
@@ -71,20 +81,28 @@ async function renderService(serviceName) {
           section.appendChild(subheading);
 
           if (Array.isArray(value)) {
-            value.forEach((line) => {
+            value.forEach((line, lineIndex) => {
               const p = document.createElement("p");
-              p.classList.add("hebrew-line");
-              p.textContent = line;
-              p.setAttribute("dir", "rtl");
+              p.className = "hebrew-line";
+
+              const highlightList =
+                highlights?.[key]?.[subkey]?.[lineIndex] ||
+                highlights?.[key]?.[lineIndex] || [];
+
+              p.innerHTML = applyHighlights(line, highlightList);
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
-            value.forEach((blessing) => {
-              blessing.forEach((line) => {
+            value.forEach((blessing, bIndex) => {
+              blessing.forEach((line, lineIndex) => {
                 const p = document.createElement("p");
-                p.classList.add("hebrew-line");
-                p.textContent = line;
-                p.setAttribute("dir", "rtl");
+                p.className = "hebrew-line";
+
+                const highlightList =
+                  highlights?.[key]?.[subkey]?.[bIndex]?.[lineIndex] ||
+                  [];
+
+                p.innerHTML = applyHighlights(line, highlightList);
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
