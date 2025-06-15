@@ -20,13 +20,15 @@ header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #a4bacc; /* Bluish-gray */
+  background-color: #a4bacc; /* or your desired header color */
   color: white;
   padding: 0.75rem 1rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* centers the child content */
   align-items: center;
+  text-align: center;
 }
+
 
 .back-button,
 .font-controls button {

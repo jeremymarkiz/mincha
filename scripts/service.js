@@ -1,3 +1,5 @@
+let currentService = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentService = urlParams.get("service");
@@ -12,42 +14,31 @@ document.addEventListener("DOMContentLoaded", () => {
   renderService(currentService);
 });
 
-function applyHighlights(text, highlightWords = []) {
-  let result = text;
-  highlightWords.forEach(word => {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escaped, 'g');
-    result = result.replace(regex, `<mark>${word}</mark>`);
-  });
-  return result;
-}
-
 async function renderService(serviceName) {
   const schemaPath = `data/${serviceName}_schema.json`;
   const textPath = `data/${serviceName}_text.json`;
   const highlightsPath = `data/highlights.json`;
-
   const contentEl = document.getElementById("service-content");
 
   try {
     const [schemaRes, textRes, highlightsRes] = await Promise.all([
       fetch(schemaPath),
       fetch(textPath),
-      fetch(highlightsPath)
+      fetch(highlightsPath),
     ]);
 
     if (!schemaRes.ok || !textRes.ok || !highlightsRes.ok) {
-      throw new Error("One or more fetches failed.");
+      throw new Error("Failed to load one or more JSON files.");
     }
 
     const schema = await schemaRes.json();
     const text = await textRes.json();
-    const highlightsData = await highlightsRes.json();
-    const highlights = highlightsData[serviceName] || {};
+    const highlights = await highlightsRes.json();
 
-    const englishTitle =
+    const serviceHighlights = highlights[serviceName] || {};
+
+    document.title =
       schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
-    document.title = englishTitle;
 
     contentEl.innerHTML = "";
 
@@ -57,52 +48,38 @@ async function renderService(serviceName) {
       const prayerData = text.text[key];
 
       const section = document.createElement("section");
-
       const heading = document.createElement("h2");
       heading.textContent = title;
       heading.setAttribute("dir", "ltr");
       section.appendChild(heading);
 
+      const nodeHighlights = serviceHighlights?.[key] || {};
+
       if (Array.isArray(prayerData)) {
-        prayerData.forEach((line, lineIndex) => {
+        prayerData.forEach((line, idx) => {
           const p = document.createElement("p");
           p.className = "hebrew-line";
-
-          const highlightList = highlights?.[key]?.[lineIndex] || [];
-          p.innerHTML = applyHighlights(line, highlightList);
-
+          p.innerHTML = applyHighlights(line, nodeHighlights[idx]);
           section.appendChild(p);
         });
       } else if (typeof prayerData === "object") {
-        Object.entries(prayerData).forEach(([subkey, value]) => {
-          const subheading = document.createElement("h3");
-          subheading.textContent = subkey;
-          subheading.setAttribute("dir", "ltr");
-          section.appendChild(subheading);
-
-          if (Array.isArray(value)) {
-            value.forEach((line, lineIndex) => {
+        Object.entries(prayerData).forEach(([subkey, block]) => {
+          if (Array.isArray(block)) {
+            block.forEach((line, lineIndex) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
-
-              const highlightList =
-                highlights?.[key]?.[subkey]?.[lineIndex] ||
-                highlights?.[key]?.[lineIndex] || [];
-
-              p.innerHTML = applyHighlights(line, highlightList);
+              const highlight = nodeHighlights?.[subkey]?.[lineIndex];
+              p.innerHTML = applyHighlights(line, highlight);
               section.appendChild(p);
             });
-          } else if (Array.isArray(value[0])) {
-            value.forEach((blessing, bIndex) => {
-              blessing.forEach((line, lineIndex) => {
+          } else if (Array.isArray(block[0])) {
+            block.forEach((blessing, bIndex) => {
+              blessing.forEach((line, lIndex) => {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
-
-                const highlightList =
-                  highlights?.[key]?.[subkey]?.[bIndex]?.[lineIndex] ||
-                  [];
-
-                p.innerHTML = applyHighlights(line, highlightList);
+                const highlight =
+                  nodeHighlights?.[subkey]?.[bIndex]?.[lIndex];
+                p.innerHTML = applyHighlights(line, highlight);
                 section.appendChild(p);
               });
               section.appendChild(document.createElement("hr"));
@@ -118,4 +95,21 @@ async function renderService(serviceName) {
     contentEl.innerHTML =
       "<p dir='ltr'>Error loading service content. See console for details.</p>";
   }
+}
+
+function applyHighlights(line, highlights) {
+  if (!Array.isArray(highlights) || highlights.length === 0) {
+    return line;
+  }
+
+  let highlightedLine = line;
+  highlights.forEach((phrase) => {
+    const safePhrase = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(safePhrase, "g");
+    highlightedLine = highlightedLine.replace(
+      regex,
+      `<span class="highlight">${phrase}</span>`
+    );
+  });
+  return highlightedLine;
 }
