@@ -1,73 +1,43 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const serviceName = urlParams.get("service");
 
   if (!serviceName) {
     console.error("Missing service parameter in URL.");
-    document.getElementById("service-content").innerHTML = "<p dir='ltr'>Missing service name in URL.</p>";
+    document.getElementById("service-content").innerHTML =
+      "<p dir='ltr'>Missing service name in URL.</p>";
     return;
   }
 
-  const schemaScript = document.createElement("script");
-  schemaScript.type = "application/json";
-  schemaScript.id = "dynamic-schema";
-  schemaScript.src = `data/${serviceName}_schema.json`;
+  const schemaPath = `data/${serviceName}_schema.json`;
+  const textPath = `data/${serviceName}_text.json`;
 
-  const textScript = document.createElement("script");
-  textScript.type = "application/json";
-  textScript.id = "dynamic-text";
-  textScript.src = `data/${serviceName}_text.json`;
+  console.log(`Fetching: ${schemaPath}, ${textPath}`);
 
-  let schemaLoaded = false;
-  let textLoaded = false;
-  let schemaData, textData;
+  try {
+    const [schemaRes, textRes] = await Promise.all([
+      fetch(schemaPath),
+      fetch(textPath)
+    ]);
 
-  schemaScript.onload = () => {
-    try {
-      schemaData = JSON.parse(schemaScript.textContent || "{}");
-      schemaLoaded = true;
-      tryRender();
-    } catch (e) {
-      console.error("Error parsing schema JSON:", e);
-      failRender();
+    if (!schemaRes.ok || !textRes.ok) {
+      throw new Error(
+        `Fetch failed. Schema: ${schemaRes.status}, Text: ${textRes.status}`
+      );
     }
-  };
 
-  textScript.onload = () => {
-    try {
-      textData = JSON.parse(textScript.textContent || "{}");
-      textLoaded = true;
-      tryRender();
-    } catch (e) {
-      console.error("Error parsing text JSON:", e);
-      failRender();
-    }
-  };
+    const schema = await schemaRes.json();
+    const text = await textRes.json();
 
-  schemaScript.onerror = () => {
-    console.error("Failed to load schema script.");
-    failRender();
-  };
-
-  textScript.onerror = () => {
-    console.error("Failed to load text script.");
-    failRender();
-  };
-
-  function tryRender() {
-    if (!schemaLoaded || !textLoaded) return;
-
-    const schema = schemaData;
-    const text = textData;
-
-    const englishTitle = schema.titles?.find(t => t.lang === "en")?.text || serviceName;
+    const englishTitle =
+      schema.titles?.find((t) => t.lang === "en")?.text || serviceName;
     document.title = englishTitle;
 
     const contentEl = document.getElementById("service-content");
 
-    schema.nodes.forEach(node => {
+    schema.nodes.forEach((node) => {
       const key = node.key;
-      const title = node.titles?.find(t => t.lang === "en")?.text || key;
+      const title = node.titles?.find((t) => t.lang === "en")?.text || key;
       const prayerData = text.text[key];
 
       const section = document.createElement("section");
@@ -78,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       section.appendChild(heading);
 
       if (Array.isArray(prayerData)) {
-        prayerData.forEach(line => {
+        prayerData.forEach((line) => {
           const p = document.createElement("p");
           p.textContent = line;
           p.setAttribute("dir", "rtl");
@@ -92,15 +62,15 @@ document.addEventListener("DOMContentLoaded", () => {
           section.appendChild(subheading);
 
           if (Array.isArray(value)) {
-            value.forEach(line => {
+            value.forEach((line) => {
               const p = document.createElement("p");
               p.textContent = line;
               p.setAttribute("dir", "rtl");
               section.appendChild(p);
             });
           } else if (Array.isArray(value[0])) {
-            value.forEach(blessing => {
-              blessing.forEach(line => {
+            value.forEach((blessing) => {
+              blessing.forEach((line) => {
                 const p = document.createElement("p");
                 p.textContent = line;
                 p.setAttribute("dir", "rtl");
@@ -114,12 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       contentEl.appendChild(section);
     });
+  } catch (err) {
+    console.error("Error loading service:", err);
+    document.getElementById("service-content").innerHTML =
+      "<p dir='ltr'>Error loading service content. See console for details.</p>";
   }
-
-  function failRender() {
-    document.getElementById("service-content").innerHTML = "<p dir='ltr'>Failed to load service data.</p>";
-  }
-
-  document.body.appendChild(schemaScript);
-  document.body.appendChild(textScript);
 });
