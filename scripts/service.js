@@ -1,5 +1,12 @@
 let currentService = null;
 
+function getFontScale() {
+  const scale = getComputedStyle(document.documentElement)
+    .getPropertyValue("--font-scale")
+    .trim();
+  return scale ? parseFloat(scale) : 1.0;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   currentService = urlParams.get("service");
@@ -58,6 +65,7 @@ async function renderService(serviceName) {
         prayerData.forEach((line, idx) => {
           const p = document.createElement("p");
           p.className = "hebrew-line";
+          p.style.fontSize = `calc(32px * ${getFontScale()})`;
           p.innerHTML = applyHighlights(line, nodeHighlights?.[idx]);
           section.appendChild(p);
         });
@@ -70,6 +78,7 @@ async function renderService(serviceName) {
             block.forEach((line, i) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
+              p.style.fontSize = `calc(32px * ${getFontScale()})`;
               p.innerHTML = applyHighlights(line, subHighlights?.[i]);
               section.appendChild(p);
             });
@@ -81,6 +90,7 @@ async function renderService(serviceName) {
               subBlock.forEach((line, lineIndex) => {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
+                p.style.fontSize = `calc(32px * ${getFontScale()})`;
                 p.innerHTML = applyHighlights(
                   line,
                   subHighlights?.[blockIndex]?.[lineIndex]
