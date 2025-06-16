@@ -35,14 +35,9 @@ async function renderService(serviceKey) {
     const text   = await textRes.json();
     const hldata = await hlRes.json();
 
-    // grab just this service’s highlights, or empty object if none
-    const rawHl = hldata[serviceKey] || {};
-
-    // normalize section keys to lower-case for lookup
-    const highlights = {};
-    Object.entries(rawHl).forEach(([sect, val]) => {
-      highlights[sect.toLowerCase()] = val;
-    });
+    // grab just this service's highlights, or empty object if none
+    const highlights = hldata[serviceKey] || {};
+    console.log("Highlights data:", highlights); // Debug log
 
     // set page title from schema
     const titleEn =
@@ -68,12 +63,13 @@ async function renderService(serviceKey) {
 
       const data = text.text[key];
 
-      // flat array of lines
+      // flat array of lines (like Ashrei)
       if (Array.isArray(data)) {
         data.forEach((line, idx) => {
           const p  = document.createElement("p");
           p.className = "hebrew-line";
-          const hl = Array.isArray(sectionHl[idx]) ? sectionHl[idx] : [];
+          // Convert numeric index to string for lookup
+          const hl = sectionHl[idx.toString()] || [];
           p.innerHTML = applyHighlights(line, hl);
           section.appendChild(p);
         });
@@ -83,12 +79,12 @@ async function renderService(serviceKey) {
         Object.entries(data).forEach(([subkey, block]) => {
           const subHlRaw = sectionHl[subkey.toLowerCase()] || {};
 
-          // 1D block of strings
+          // 1D block of strings (like introduction/conclusion)
           if (Array.isArray(block) && typeof block[0] === "string") {
             block.forEach((line, i) => {
               const p = document.createElement("p");
               p.className = "hebrew-line";
-              const hl = Array.isArray(subHlRaw[i]) ? subHlRaw[i] : [];
+              const hl = subHlRaw[i.toString()] || [];
               p.innerHTML = applyHighlights(line, hl);
               section.appendChild(p);
             });
@@ -102,8 +98,9 @@ async function renderService(serviceKey) {
               group.forEach((line, li) => {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
-                const grpHl = subHlRaw[gi] || [];
-                const hl    = Array.isArray(grpHl[li]) ? grpHl[li] : [];
+                // Handle nested array structure for blessings
+                const grpHl = subHlRaw[gi.toString()] || [];
+                const hl = grpHl[li.toString()] || [];
                 p.innerHTML = applyHighlights(line, hl);
                 section.appendChild(p);
               });
@@ -129,6 +126,8 @@ function applyHighlights(line, phrases = []) {
   if (!Array.isArray(phrases) || phrases.length === 0) return line;
   let result = line;
   phrases.forEach(phrase => {
+    // Skip null/undefined phrases
+    if (!phrase) return;
     const esc   = phrase.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(esc, 'g');
     result = result.replace(
