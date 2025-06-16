@@ -99,8 +99,12 @@ async function renderService(serviceKey) {
                 const p = document.createElement("p");
                 p.className = "hebrew-line";
                 // Handle nested array structure for blessings
-                const grpHl = subHlRaw[gi.toString()] || [];
-                const hl = grpHl[li.toString()] || [];
+                const grpHl = Array.isArray(subHlRaw[gi.toString()]) 
+                  ? subHlRaw[gi.toString()] 
+                  : [];
+                const hl = Array.isArray(grpHl[li.toString()])
+                  ? grpHl[li.toString()]
+                  : [];
                 p.innerHTML = applyHighlights(line, hl);
                 section.appendChild(p);
               });
