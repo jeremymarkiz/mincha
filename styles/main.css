@@ -144,8 +144,8 @@ main.nav-grid {
 }
 
 /* -------------------- HIGHLIGHTING -------------------- */
-mark {
-  color: #6ec3c0; /* Your theme green */
+.highlight {
+  color: #6ec3c0;      /* your theme green */
   font-weight: bold;
-  background: none;
+  background: none;    /* remove the yellow “mark” background */
 }
